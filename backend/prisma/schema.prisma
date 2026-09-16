@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  phone     String   @unique
+  name      String
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orders    Order[]
+  addresses Address[]
+  mitraProfile MitraProfile?
+}
+
+enum Role {
+  CUSTOMER
+  MITRA
+  ADMIN
+}
+
+model MitraProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  isOnline  Boolean  @default(false)
+  area      String
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  label         String
+  recipientName String
+  phone         String
+  address       String
+  isDefault     Boolean  @default(false)
+}
+
+model Store {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  address     String
+  isActive    Boolean   @default(true)
+  products    Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+  name        String
+  description String
+  price       Float
+  stock       Int      @default(0)
+  isAvailable Boolean  @default(true)
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique
+  customerId    String
+  customer      User        @relation(fields: [customerId], references: [id])
+  mitraId       String?
+  status        OrderStatus @default(PENDING)
+  total         Float
+  subtotal      Float
+  serviceFee    Float
+  deliveryFee   Float
+  discount      Float       @default(0)
+  customerNote  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  items         OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHOPPING
+  READY_TO_DELIVER
+  ON_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  orderId        String
+  order          Order   @relation(fields: [orderId], references: [id])
+  productId      String?
+  productName    String
+  qty            Int
+  estimatedPrice Float
+  actualPrice    Float?
+  note           String?
+}
