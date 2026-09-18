@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/domain/auth_provider.dart';
@@ -20,6 +20,7 @@ import '../features/addresses/presentation/addresses_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/mitra/presentation/mitra_home_screen.dart';
 import '../features/mitra/presentation/mitra_order_detail_screen.dart';
+import '../core/widgets/map_picker_screen.dart';
 
 // Route names
 class AppRoutes {
@@ -41,6 +42,7 @@ class AppRoutes {
   static const profile = '/profile';
   static const mitraHome = '/mitra';
   static const mitraOrderDetail = '/mitra/orders/:id';
+  static const mapPicker = '/map-picker';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -126,6 +128,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.mitraOrderDetail,
         builder: (_, state) =>
             MitraOrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoutes.mapPicker,
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return MapPickerScreen(
+            title: extra?['title'] as String? ?? 'Pilih Lokasi',
+            initialLocation: extra?['initialLocation'],
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

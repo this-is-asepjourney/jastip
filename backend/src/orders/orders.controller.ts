@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Param, Body } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
@@ -17,6 +17,12 @@ export class OrdersController {
     return this.ordersService.findAll(user.id);
   }
 
+  // Driver: lihat semua penawaran aktif di peta
+  @Get("offers")
+  findOffers() {
+    return this.ordersService.findOffers();
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string, @CurrentUser() user: any) {
     return this.ordersService.findOne(id, user.id, user.role);
@@ -25,6 +31,12 @@ export class OrdersController {
   @Post(":id/cancel")
   cancel(@Param("id") id: string, @CurrentUser() user: any) {
     return this.ordersService.cancel(id, user.id);
+  }
+
+  // Driver: ambil order (first-come-first-served)
+  @Patch(":id/take")
+  takeOrder(@Param("id") id: string, @CurrentUser() user: any) {
+    return this.ordersService.takeOrder(id, user.mitraId ?? user.id);
   }
 
   @Post("custom")

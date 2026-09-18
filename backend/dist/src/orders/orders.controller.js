@@ -27,11 +27,17 @@ let OrdersController = class OrdersController {
     findAll(user) {
         return this.ordersService.findAll(user.id);
     }
+    findOffers() {
+        return this.ordersService.findOffers();
+    }
     findOne(id, user) {
         return this.ordersService.findOne(id, user.id, user.role);
     }
     cancel(id, user) {
         return this.ordersService.cancel(id, user.id);
+    }
+    takeOrder(id, user) {
+        return this.ordersService.takeOrder(id, user.mitraId ?? user.id);
     }
     createCustom(user, body) {
         return this.ordersService.createCustom(user.id, body);
@@ -54,6 +60,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)("offers"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "findOffers", null);
+__decorate([
     (0, common_1.Get)(":id"),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -69,6 +81,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "cancel", null);
+__decorate([
+    (0, common_1.Patch)(":id/take"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "takeOrder", null);
 __decorate([
     (0, common_1.Post)("custom"),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

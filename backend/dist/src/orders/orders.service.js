@@ -134,8 +134,51 @@ let OrdersService = class OrdersService {
                             note: body.itemNote,
                         }],
                 },
+                delivery: {
+                    create: {
+                        pickupLat: body.storeLat,
+                        pickupLng: body.storeLng,
+                        destinationLat: body.deliveryLat,
+                        destinationLng: body.deliveryLng,
+                        status: "PENDING",
+                    }
+                }
             },
-            include: { items: true },
+            include: { items: true, delivery: true },
+        });
+    }
+    async findOffers() {
+        return this.prisma.order.findMany({
+            where: {
+                orderType: "CUSTOM_JASTIP",
+                status: { in: ["WAITING_QUOTE", "PENDING"] },
+                mitraId: null,
+            },
+            include: {
+                items: true,
+                customer: { select: { name: true, phone: true } },
+                address: true,
+                delivery: true,
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+    async takeOrder(orderId, mitraId) {
+        const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+        if (!order)
+            throw new common_1.NotFoundException("Order tidak ditemukan");
+        if (order.mitraId)
+            throw new common_1.BadRequestException("Order sudah diambil driver lain");
+        if (!["WAITING_QUOTE", "PENDING"].includes(order.status)) {
+            throw new common_1.BadRequestException("Order tidak tersedia");
+        }
+        return this.prisma.order.update({
+            where: { id: orderId },
+            data: {
+                mitraId,
+                status: "CONFIRMED",
+            },
+            include: { items: true, customer: { select: { name: true, phone: true } }, address: true, delivery: true },
         });
     }
 };

@@ -1,22 +1,31 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_router.dart';
+import '../../driver/data/driver_repository.dart';
+import '../../auth/domain/auth_provider.dart';
 
-class CustomJastipScreen extends StatefulWidget {
+class CustomJastipScreen extends ConsumerStatefulWidget {
   const CustomJastipScreen({super.key});
 
   @override
-  State<CustomJastipScreen> createState() => _CustomJastipScreenState();
+  ConsumerState<CustomJastipScreen> createState() => _CustomJastipScreenState();
 }
 
-class _CustomJastipScreenState extends State<CustomJastipScreen> {
+class _CustomJastipScreenState extends ConsumerState<CustomJastipScreen> {
   final _formKey = GlobalKey<FormState>();
   final _productNameCtrl = TextEditingController();
   final _storeCtrl = TextEditingController();
   final _qtyCtrl = TextEditingController(text: '1');
   final _noteCtrl = TextEditingController();
   bool _isSubmitting = false;
+
+  final _repo = DriverRepository();
+
+  LatLng? _storeLocation;
+  LatLng? _deliveryLocation;
 
   @override
   void dispose() {
@@ -27,67 +36,124 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
     super.dispose();
   }
 
+  Future<void> _pickLocation(bool isStore) async {
+    final initialLoc = isStore ? _storeLocation : _deliveryLocation;
+    final title = isStore ? 'Pilih Lokasi Toko' : 'Pilih Lokasi Pengantaran';
+
+    final result = await context.push<LatLng>(
+      AppRoutes.mapPicker,
+      extra: {
+        'title': title,
+        'initialLocation': initialLoc,
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        if (isStore) {
+          _storeLocation = result;
+        } else {
+          _deliveryLocation = result;
+        }
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      setState(() => _isSubmitting = false);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryDark, AppColors.primary],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Penawaran Terkirim!',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Driver di sekitarmu akan melihat penawaran ini di peta dan segera mengambil order.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  context.go(AppRoutes.orders);
-                },
-                child: const Text('Lihat Status Pesanan'),
-              ),
-            ],
-          ),
+    
+    if (_storeLocation == null || _deliveryLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap pilih lokasi toko dan lokasi pengantaran di peta!'),
+          backgroundColor: AppColors.error,
         ),
       );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    
+    try {
+      final address = ref.read(selectedAddressProvider);
+      
+      await _repo.createOffer(
+        itemName: _productNameCtrl.text,
+        storeName: _storeCtrl.text,
+        qty: int.tryParse(_qtyCtrl.text) ?? 1,
+        note: _noteCtrl.text.isEmpty ? null : _noteCtrl.text,
+        addressId: address?.id,
+        storeLocation: _storeLocation!,
+        deliveryLocation: _deliveryLocation!,
+      );
+
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primaryDark, AppColors.primary],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Penawaran Terkirim!',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Driver di sekitarmu akan melihat penawaran ini di peta dan segera mengambil order.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.go(AppRoutes.orders);
+                  },
+                  child: const Text('Lihat Status Pesanan'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuat penawaran: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -98,72 +164,43 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
         toolbarHeight: 90,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text('Buat Penawaran'),
+          children: [
+            const Text(
+              'Buat Penawaran',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
-              'Driver akan membelikan & mengantarkan',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              'Driver akan belikan pesananmu',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
             ),
           ],
         ),
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(24),
+            bottomRight: Radius.circular(24),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // ── Banner alur baru ───────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withValues(alpha: 0.08),
-                      AppColors.primaryLight.withValues(alpha: 0.3),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Text('🛵', style: TextStyle(fontSize: 28)),
-                    SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Bagaimana cara kerjanya?',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Isi detail barang → Driver terdekat lihat di peta → Driver belanja & antar ke rumahmu.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Detail Barang ──────────────────────────────────────
+              // ── Detail Barang ────────────────────────────────────────
               const Text(
                 'Detail Barang',
                 style: TextStyle(
@@ -225,7 +262,7 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ── Titik Koordinat (COMING SOON) ──────────────────────
+              // ── Titik Koordinat (Map Picker) ──────────────────────
               const Text(
                 'Titik Lokasi',
                 style: TextStyle(
@@ -236,97 +273,30 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               const SizedBox(height: 12),
 
               // Lokasi toko belanja
-              _LocationFieldComingSoon(
+              _LocationFieldActive(
                 icon: Icons.store_rounded,
                 iconColor: AppColors.secondary,
-                title: 'Lokasi Toko Belanja',
-                subtitle: 'Tandai di peta tempat driver harus belanja',
-                badgeLabel: 'Coming Soon',
+                title: 'Lokasi Toko Belanja *',
+                subtitle: _storeLocation == null
+                    ? 'Ketuk untuk pilih di peta'
+                    : 'Sudah dipilih: ${_storeLocation!.latitude.toStringAsFixed(4)}, ${_storeLocation!.longitude.toStringAsFixed(4)}',
+                isSet: _storeLocation != null,
+                onTap: () => _pickLocation(true),
               ),
               const SizedBox(height: 10),
 
               // Lokasi antar / tujuan
-              _LocationFieldComingSoon(
+              _LocationFieldActive(
                 icon: Icons.home_rounded,
                 iconColor: AppColors.primary,
-                title: 'Lokasi Pengantaran',
-                subtitle: 'Tandai di peta tujuan pengantaran barang',
-                badgeLabel: 'Coming Soon',
+                title: 'Lokasi Pengantaran *',
+                subtitle: _deliveryLocation == null
+                    ? 'Ketuk untuk pilih di peta'
+                    : 'Sudah dipilih: ${_deliveryLocation!.latitude.toStringAsFixed(4)}, ${_deliveryLocation!.longitude.toStringAsFixed(4)}',
+                isSet: _deliveryLocation != null,
+                onTap: () => _pickLocation(false),
               ),
-              const SizedBox(height: 8),
-
-              // Keterangan sementara
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppColors.secondary.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_rounded,
-                        color: AppColors.secondary, size: 16),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Sementara menggunakan alamat default di profilmu. Fitur pilih koordinat dari peta segera hadir!',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Alamat Antar (sementara dari profil) ──────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(14),
-                  border: const Border.fromBorderSide(
-                    BorderSide(color: AppColors.border),
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.location_on_rounded,
-                        color: AppColors.primary),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Alamat Pengantaran (Default)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Jl. Merdeka No. 12, Wirosari, Grobogan',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              
               const SizedBox(height: 32),
 
               // ── Tombol Submit ──────────────────────────────────────
@@ -342,9 +312,15 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                         ),
                       )
                     : const Icon(Icons.send_rounded),
-                label: const Text('Kirim Penawaran ke Driver'),
+                label: Text(
+                  _isSubmitting ? 'Memproses...' : 'Kirim Penawaran',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -353,83 +329,87 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
   }
 }
 
-// ─── Widget lokasi coming soon ─────────────────────────────────────────────
+// ─── Widget lokasi aktif ─────────────────────────────────────────────
 
-class _LocationFieldComingSoon extends StatelessWidget {
+class _LocationFieldActive extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
   final String subtitle;
-  final String badgeLabel;
+  final bool isSet;
+  final VoidCallback onTap;
 
-  const _LocationFieldComingSoon({
+  const _LocationFieldActive({
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.subtitle,
-    required this.badgeLabel,
+    required this.isSet,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSet ? AppColors.success : AppColors.border,
+            width: isSet ? 1.5 : 1.0,
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor),
             ),
-          ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              badgeLabel,
-              style: const TextStyle(
-                color: AppColors.secondary,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isSet ? AppColors.success : AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: isSet ? FontWeight.w500 : FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            Icon(
+              isSet ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+              color: isSet ? AppColors.success : AppColors.textSecondary,
+            ),
+          ],
+        ),
       ),
     );
   }

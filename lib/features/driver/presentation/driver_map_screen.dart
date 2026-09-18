@@ -68,29 +68,46 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen>
     });
   }
 
-  void _takeOffer(String offerId) {
-    ref.read(offersProvider.notifier).takeOffer(offerId);
-    _closeSheet();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white),
-            SizedBox(width: 10),
-            Text('Order berhasil diambil! Segera belanja.'),
-          ],
-        ),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+  Future<void> _takeOffer(String offerId) async {
+    try {
+      await ref.read(offersProvider.notifier).takeOffer(offerId);
+      _closeSheet();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white),
+                SizedBox(width: 10),
+                Text('Order berhasil diambil! Segera belanja.'),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isOnline = ref.watch(driverOnlineProvider);
+    final offersState = ref.watch(offersProvider);
     final pendingOffers = ref.watch(pendingOffersProvider);
 
     return Scaffold(
@@ -450,7 +467,7 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen>
           FloatingActionButton.small(
             heroTag: 'refresh',
             onPressed: () {
-              ref.read(offersProvider.notifier).refresh();
+              ref.read(offersProvider.notifier).loadOffers();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Memuat ulang penawaran...'),
@@ -459,8 +476,19 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen>
               );
             },
             backgroundColor: Colors.white,
-            foregroundColor: AppColors.textSecondary,
-            child: const Icon(Icons.refresh_rounded),
+            foregroundColor: offersState.status == OfferLoadStatus.loading
+                ? AppColors.primary
+                : AppColors.textSecondary,
+            child: offersState.status == OfferLoadStatus.loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : const Icon(Icons.refresh_rounded),
           ),
         ],
       ),

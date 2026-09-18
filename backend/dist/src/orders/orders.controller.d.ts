@@ -6,18 +6,29 @@ export declare class OrdersController {
     create(user: any, dto: CreateOrderDto): Promise<{
         address: {
             id: string;
-            phone: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             address: string;
-            latitude: number | null;
-            longitude: number | null;
+            note: string | null;
+            userId: string;
             label: string;
             recipientName: string;
-            note: string | null;
+            phone: string;
+            latitude: number | null;
+            longitude: number | null;
             isDefault: boolean;
         };
+        items: {
+            id: string;
+            subtotal: number;
+            productName: string;
+            qty: number;
+            estimatedPrice: number;
+            actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
+            orderId: string;
+        }[];
         payment: {
             id: string;
             status: import(".prisma/client").$Enums.PaymentStatus;
@@ -28,60 +39,24 @@ export declare class OrdersController {
             transactionId: string | null;
             paidAt: Date | null;
         };
-        items: {
-            id: string;
-            note: string | null;
-            productId: string | null;
-            productName: string;
-            qty: number;
-            estimatedPrice: number;
-            subtotal: number;
-            actualPrice: number | null;
-            orderId: string;
-        }[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
-        orderType: import(".prisma/client").$Enums.OrderType;
-        customerNote: string | null;
-        deliveryFee: number;
         orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
         subtotal: number;
         serviceFee: number;
+        deliveryFee: number;
         discount: number;
         total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         customerId: string;
         mitraId: string | null;
+        addressId: string | null;
     }>;
     findAll(user: any): Promise<({
-        address: {
-            id: string;
-            phone: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            address: string;
-            latitude: number | null;
-            longitude: number | null;
-            label: string;
-            recipientName: string;
-            note: string | null;
-            isDefault: boolean;
-        };
-        items: {
-            id: string;
-            note: string | null;
-            productId: string | null;
-            productName: string;
-            qty: number;
-            estimatedPrice: number;
-            subtotal: number;
-            actualPrice: number | null;
-            orderId: string;
-        }[];
         mitra: {
             user: {
                 name: string;
@@ -98,38 +73,167 @@ export declare class OrdersController {
             rating: number;
             totalOrders: number;
         };
-    } & {
-        id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
-        orderType: import(".prisma/client").$Enums.OrderType;
-        customerNote: string | null;
-        deliveryFee: number;
-        orderNumber: string;
-        subtotal: number;
-        serviceFee: number;
-        discount: number;
-        total: number;
-        customerId: string;
-        mitraId: string | null;
-    })[]>;
-    findOne(id: string, user: any): Promise<{
         address: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            address: string;
+            note: string | null;
+            userId: string;
+            label: string;
+            recipientName: string;
             phone: string;
+            latitude: number | null;
+            longitude: number | null;
+            isDefault: boolean;
+        };
+        items: {
+            id: string;
+            subtotal: number;
+            productName: string;
+            qty: number;
+            estimatedPrice: number;
+            actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
+            orderId: string;
+        }[];
+    } & {
+        id: string;
+        orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        subtotal: number;
+        serviceFee: number;
+        deliveryFee: number;
+        discount: number;
+        total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        mitraId: string | null;
+        addressId: string | null;
+    })[]>;
+    findOffers(): Promise<({
+        customer: {
+            name: string;
+            phone: string;
+        };
+        address: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            address: string;
+            note: string | null;
+            userId: string;
+            label: string;
+            recipientName: string;
+            phone: string;
+            latitude: number | null;
+            longitude: number | null;
+            isDefault: boolean;
+        };
+        items: {
+            id: string;
+            subtotal: number;
+            productName: string;
+            qty: number;
+            estimatedPrice: number;
+            actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
+            orderId: string;
+        }[];
+        delivery: {
+            id: string;
+            status: import(".prisma/client").$Enums.DeliveryStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            mitraId: string | null;
+            note: string | null;
+            orderId: string;
+            pickupLat: number | null;
+            pickupLng: number | null;
+            destinationLat: number | null;
+            destinationLng: number | null;
+            pickedUpAt: Date | null;
+            deliveredAt: Date | null;
+        };
+    } & {
+        id: string;
+        orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        subtotal: number;
+        serviceFee: number;
+        deliveryFee: number;
+        discount: number;
+        total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        mitraId: string | null;
+        addressId: string | null;
+    })[]>;
+    findOne(id: string, user: any): Promise<{
+        mitra: {
+            user: {
+                name: string;
+                phone: string;
+            };
+        } & {
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
+            isOnline: boolean;
+            area: string | null;
+            vehicleType: string | null;
+            vehicleNumber: string | null;
+            rating: number;
+            totalOrders: number;
+        };
+        address: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             address: string;
-            latitude: number | null;
-            longitude: number | null;
+            note: string | null;
+            userId: string;
             label: string;
             recipientName: string;
-            note: string | null;
+            phone: string;
+            latitude: number | null;
+            longitude: number | null;
             isDefault: boolean;
         };
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                storeId: string;
+                categoryId: string | null;
+                description: string;
+                price: number;
+                image: string | null;
+                stock: number;
+                isAvailable: boolean;
+            };
+        } & {
+            id: string;
+            subtotal: number;
+            productName: string;
+            qty: number;
+            estimatedPrice: number;
+            actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
+            orderId: string;
+        })[];
         payment: {
             id: string;
             status: import(".prisma/client").$Enums.PaymentStatus;
@@ -145,8 +249,8 @@ export declare class OrdersController {
             status: import(".prisma/client").$Enums.DeliveryStatus;
             createdAt: Date;
             updatedAt: Date;
-            note: string | null;
             mitraId: string | null;
+            note: string | null;
             orderId: string;
             pickupLat: number | null;
             pickupLng: number | null;
@@ -155,109 +259,144 @@ export declare class OrdersController {
             pickedUpAt: Date | null;
             deliveredAt: Date | null;
         };
-        items: ({
-            product: {
-                id: string;
-                name: string;
-                createdAt: Date;
-                updatedAt: Date;
-                image: string | null;
-                description: string;
-                price: number;
-                stock: number;
-                isAvailable: boolean;
-                storeId: string;
-                categoryId: string | null;
-            };
-        } & {
-            id: string;
-            note: string | null;
-            productId: string | null;
-            productName: string;
-            qty: number;
-            estimatedPrice: number;
-            subtotal: number;
-            actualPrice: number | null;
-            orderId: string;
-        })[];
-        mitra: {
-            user: {
-                phone: string;
-                name: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            isOnline: boolean;
-            area: string | null;
-            vehicleType: string | null;
-            vehicleNumber: string | null;
-            rating: number;
-            totalOrders: number;
-        };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
-        orderType: import(".prisma/client").$Enums.OrderType;
-        customerNote: string | null;
-        deliveryFee: number;
         orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
         subtotal: number;
         serviceFee: number;
+        deliveryFee: number;
         discount: number;
         total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         customerId: string;
         mitraId: string | null;
+        addressId: string | null;
     }>;
     cancel(id: string, user: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
-        orderType: import(".prisma/client").$Enums.OrderType;
-        customerNote: string | null;
-        deliveryFee: number;
         orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
         subtotal: number;
         serviceFee: number;
+        deliveryFee: number;
         discount: number;
         total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         customerId: string;
         mitraId: string | null;
+        addressId: string | null;
+    }>;
+    takeOrder(id: string, user: any): Promise<{
+        customer: {
+            name: string;
+            phone: string;
+        };
+        address: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            address: string;
+            note: string | null;
+            userId: string;
+            label: string;
+            recipientName: string;
+            phone: string;
+            latitude: number | null;
+            longitude: number | null;
+            isDefault: boolean;
+        };
+        items: {
+            id: string;
+            subtotal: number;
+            productName: string;
+            qty: number;
+            estimatedPrice: number;
+            actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
+            orderId: string;
+        }[];
+        delivery: {
+            id: string;
+            status: import(".prisma/client").$Enums.DeliveryStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            mitraId: string | null;
+            note: string | null;
+            orderId: string;
+            pickupLat: number | null;
+            pickupLng: number | null;
+            destinationLat: number | null;
+            destinationLng: number | null;
+            pickedUpAt: Date | null;
+            deliveredAt: Date | null;
+        };
+    } & {
+        id: string;
+        orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        subtotal: number;
+        serviceFee: number;
+        deliveryFee: number;
+        discount: number;
+        total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        mitraId: string | null;
+        addressId: string | null;
     }>;
     createCustom(user: any, body: any): Promise<{
         items: {
             id: string;
-            note: string | null;
-            productId: string | null;
+            subtotal: number;
             productName: string;
             qty: number;
             estimatedPrice: number;
-            subtotal: number;
             actualPrice: number | null;
+            note: string | null;
+            productId: string | null;
             orderId: string;
         }[];
+        delivery: {
+            id: string;
+            status: import(".prisma/client").$Enums.DeliveryStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            mitraId: string | null;
+            note: string | null;
+            orderId: string;
+            pickupLat: number | null;
+            pickupLng: number | null;
+            destinationLat: number | null;
+            destinationLng: number | null;
+            pickedUpAt: Date | null;
+            deliveredAt: Date | null;
+        };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
-        orderType: import(".prisma/client").$Enums.OrderType;
-        customerNote: string | null;
-        deliveryFee: number;
         orderNumber: string;
+        orderType: import(".prisma/client").$Enums.OrderType;
+        status: import(".prisma/client").$Enums.OrderStatus;
         subtotal: number;
         serviceFee: number;
+        deliveryFee: number;
         discount: number;
         total: number;
+        customerNote: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         customerId: string;
         mitraId: string | null;
+        addressId: string | null;
     }>;
 }

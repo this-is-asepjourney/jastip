@@ -132,8 +132,54 @@ export class OrdersService {
             note: body.itemNote,
           }],
         },
+        delivery: {
+          create: {
+            pickupLat: body.storeLat,
+            pickupLng: body.storeLng,
+            destinationLat: body.deliveryLat,
+            destinationLng: body.deliveryLng,
+            status: "PENDING",
+          }
+        }
       },
-      include: { items: true },
+      include: { items: true, delivery: true },
+    });
+  }
+
+  // ─── Driver: Lihat penawaran aktif di peta ───────────────────────────────
+  async findOffers() {
+    return this.prisma.order.findMany({
+      where: {
+        orderType: "CUSTOM_JASTIP",
+        status: { in: ["WAITING_QUOTE", "PENDING"] },
+        mitraId: null,
+      },
+      include: {
+        items: true,
+        customer: { select: { name: true, phone: true } },
+        address: true,
+        delivery: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  // ─── Driver: Ambil order (first-come-first-served) ────────────────────────
+  async takeOrder(orderId: string, mitraId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException("Order tidak ditemukan");
+    if (order.mitraId) throw new BadRequestException("Order sudah diambil driver lain");
+    if (!["WAITING_QUOTE", "PENDING"].includes(order.status)) {
+      throw new BadRequestException("Order tidak tersedia");
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        mitraId,
+        status: "CONFIRMED",
+      },
+      include: { items: true, customer: { select: { name: true, phone: true } }, address: true, delivery: true },
     });
   }
 }
