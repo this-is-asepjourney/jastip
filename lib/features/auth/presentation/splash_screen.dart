@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: const Icon(
@@ -108,7 +108,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Text(
                     'Belanja Mudah, Terima di Rumah',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white.withOpacity(0.7),
+                        Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ),

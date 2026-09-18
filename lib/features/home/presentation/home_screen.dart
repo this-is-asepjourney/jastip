@@ -82,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -179,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               width: 120,
                               height: 120,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -451,7 +451,7 @@ class _StoreCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.06),
+              color: AppColors.primary.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

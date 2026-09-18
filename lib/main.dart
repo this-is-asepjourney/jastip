@@ -9,11 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalStorage.init();
   await initializeDateFormatting('id_ID', null);
-  runApp(
-    const ProviderScope(
-      child: JastipApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: JastipApp()));
 }
 
 class JastipApp extends ConsumerWidget {

@@ -44,15 +44,15 @@ class AppRoutes {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
   return GoRouter(
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isLoggedIn = authState.isLoggedIn;
       final isSplash = state.matchedLocation == AppRoutes.splash;
       final isOnboarding = state.matchedLocation == AppRoutes.onboarding;
-      final isAuthRoute = state.matchedLocation == AppRoutes.login ||
+      final isAuthRoute =
+          state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register;
 
       if (isSplash || isOnboarding || isAuthRoute) return null;
@@ -68,93 +68,68 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: AppRoutes.splash,
-        builder: (_, __) => const SplashScreen(),
-      ),
+      GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
+        builder: (_, _) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.login,
-        builder: (_, __) => const LoginScreen(),
-      ),
+      GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(
         path: AppRoutes.register,
-        builder: (_, __) => const RegisterScreen(),
+        builder: (_, _) => const RegisterScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.home,
-        builder: (_, __) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.stores,
-        builder: (_, __) => const StoresScreen(),
-      ),
+      GoRoute(path: AppRoutes.home, builder: (_, _) => const HomeScreen()),
+      GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresScreen()),
       GoRoute(
         path: AppRoutes.storeDetail,
-        builder: (_, state) => StoreDetailScreen(
-          storeId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            StoreDetailScreen(storeId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.productDetail,
-        builder: (_, state) => ProductDetailScreen(
-          productId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            ProductDetailScreen(productId: state.pathParameters['id']!),
       ),
-      GoRoute(
-        path: AppRoutes.cart,
-        builder: (_, __) => const CartScreen(),
-      ),
+      GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
       GoRoute(
         path: AppRoutes.checkout,
-        builder: (_, __) => const CheckoutScreen(),
+        builder: (_, _) => const CheckoutScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.orders,
-        builder: (_, __) => const OrdersScreen(),
-      ),
+      GoRoute(path: AppRoutes.orders, builder: (_, _) => const OrdersScreen()),
       GoRoute(
         path: AppRoutes.orderDetail,
-        builder: (_, state) => OrderDetailScreen(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.orderTracking,
-        builder: (_, state) => OrderTrackingScreen(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            OrderTrackingScreen(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.customJastip,
-        builder: (_, __) => const CustomJastipScreen(),
+        builder: (_, _) => const CustomJastipScreen(),
       ),
       GoRoute(
         path: AppRoutes.addresses,
-        builder: (_, __) => const AddressesScreen(),
+        builder: (_, _) => const AddressesScreen(),
       ),
       GoRoute(
         path: AppRoutes.profile,
-        builder: (_, __) => const ProfileScreen(),
+        builder: (_, _) => const ProfileScreen(),
       ),
       GoRoute(
         path: AppRoutes.mitraHome,
-        builder: (_, __) => const MitraHomeScreen(),
+        builder: (_, _) => const MitraHomeScreen(),
       ),
       GoRoute(
         path: AppRoutes.mitraOrderDetail,
-        builder: (_, state) => MitraOrderDetailScreen(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            MitraOrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Halaman tidak ditemukan: ${state.error}'),
-      ),
+      body: Center(child: Text('Halaman tidak ditemukan: ${state.error}')),
     ),
   );
 });

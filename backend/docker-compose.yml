@@ -1,18 +1,10 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: jastip-postgres
+  redis:
+    image: redis:7-alpine
+    container_name: jastip-redis
     restart: always
-    environment:
-      POSTGRES_USER: jastip_user
-      POSTGRES_PASSWORD: jastip_password
-      POSTGRES_DB: jastip_db
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "6379:6379"
 
-volumes:
-  postgres_data:

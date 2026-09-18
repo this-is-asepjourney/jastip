@@ -85,7 +85,7 @@ class _MitraHomeScreenState extends ConsumerState<MitraHomeScreen> {
                             decoration: BoxDecoration(
                               color: _isOnline
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.2),
+                                  : Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -153,10 +153,10 @@ class _MitraHomeScreenState extends ConsumerState<MitraHomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: AppColors.error.withOpacity(0.3)),
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       children: [
@@ -308,7 +308,7 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -360,7 +360,7 @@ class _MitraOrderCard extends StatelessWidget {
           boxShadow: showAccept
               ? [
                   BoxShadow(
-                    color: AppColors.statusPending.withOpacity(0.15),
+                    color: AppColors.statusPending.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -385,7 +385,7 @@ class _MitraOrderCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.statusPending.withOpacity(0.1),
+                    color: AppColors.statusPending.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

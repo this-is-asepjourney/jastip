@@ -34,20 +34,64 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    try {
-      await ref.read(authProvider.notifier).register(
-            _nameCtrl.text,
-            _phoneCtrl.text,
-            _passwordCtrl.text,
-            _emailCtrl.text.isEmpty ? null : _emailCtrl.text,
-          );
-      if (mounted) context.go(AppRoutes.home);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registrasi gagal: $e')),
+
+    // Tampilkan popup loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 24),
+              Text('Memproses registrasi...'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await ref.read(authProvider.notifier).register(
+          _nameCtrl.text,
+          _phoneCtrl.text,
+          _passwordCtrl.text,
+          _emailCtrl.text.isEmpty ? null : _emailCtrl.text,
         );
-      }
+
+    if (!mounted) return;
+
+    // Tutup popup loading
+    Navigator.pop(context);
+
+    final authState = ref.read(authProvider);
+    if (authState.error != null) {
+      // Tampilkan popup error
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Registrasi Gagal'),
+          content: Text(authState.error!),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (authState.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registrasi berhasil!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go(AppRoutes.home);
     }
   }
 

@@ -34,7 +34,7 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 40),
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                       child: Text(
                         user?.name.isNotEmpty == true
                             ? user!.name[0].toUpperCase()

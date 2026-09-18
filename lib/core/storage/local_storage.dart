@@ -37,6 +37,11 @@ class LocalStorage {
 
   static String? getUserId() => _instance.getString(AppConfig.keyUserId);
 
+  static Future<void> saveUserName(String name) async =>
+      _instance.setString(AppConfig.keyUserName, name);
+
+  static String? getUserName() => _instance.getString(AppConfig.keyUserName);
+
   // Onboarding
   static Future<void> setOnboardingDone() async =>
       _instance.setBool(AppConfig.keyOnboardingDone, true);

@@ -92,8 +92,10 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 72,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: const [
             Text('Custom Jastip'),
             Text(
@@ -114,10 +116,10 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: AppColors.secondary.withOpacity(0.3),
+                    color: AppColors.secondary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: const Row(
@@ -225,6 +227,7 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'Alamat Pengantaran',

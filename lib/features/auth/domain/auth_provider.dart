@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../data/auth_models.dart';
+import '../data/auth_repository.dart';
 import '../../orders/data/order_models.dart';
 import '../../../core/storage/local_storage.dart';
 
@@ -18,13 +20,15 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool clearUser = false,
-  }) =>
-      AuthState(
+    bool clearError = false,
+  }) => AuthState(
         user: clearUser ? null : user ?? this.user,
         isLoading: isLoading ?? this.isLoading,
-        error: error,
+        error: clearError ? null : error,
       );
 }
+
+final _authRepo = AuthRepository();
 
 // Auth provider
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -36,78 +40,59 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final role = LocalStorage.getUserRole();
     final id = LocalStorage.getUserId();
     if (role != null && id != null) {
-      // Mock user from storage
       state = AuthState(
         user: UserModel(
           id: id,
-          name: 'User',
+          name: LocalStorage.getUserName() ?? 'User',
           phone: '',
           role: UserRoleExt.fromString(role),
         ),
       );
+      // Fetch real user data
+      _fetchMe();
     }
   }
 
+  Future<void> _fetchMe() async {
+    try {
+      final user = await _authRepo.getMe();
+      await LocalStorage.saveUserName(user.name);
+      state = state.copyWith(user: user);
+    } catch (_) {}
+  }
+
   Future<void> login(String phone, String password) async {
-    state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(seconds: 1)); // Mock API call
-
-    // Mock: any credentials work for demo
-    const mockUser = UserModel(
-      id: 'u1',
-      name: 'Ahmad Wirosari',
-      phone: '081234567890',
-      email: 'ahmad@wirosari.id',
-      role: UserRole.customer,
-    );
-
-    await LocalStorage.saveAccessToken('mock_token_${DateTime.now().millisecondsSinceEpoch}');
-    await LocalStorage.saveUserRole('CUSTOMER');
-    await LocalStorage.saveUserId('u1');
-
-    state = AuthState(user: mockUser);
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final data = await _authRepo.login(phone, password);
+      final user = UserModel.fromJson(data['user']);
+      await LocalStorage.saveUserName(user.name);
+      state = AuthState(user: user);
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Login gagal. Periksa nomor HP dan password Anda.';
+      state = state.copyWith(isLoading: false, error: msg.toString());
+    } catch (_) {
+      state = state.copyWith(isLoading: false, error: 'Terjadi kesalahan. Coba lagi.');
+    }
   }
 
-  Future<void> loginAsMitra(String phone, String password) async {
-    state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(seconds: 1));
-
-    const mockMitra = UserModel(
-      id: 'm1',
-      name: 'Budi Santoso',
-      phone: '082345678901',
-      role: UserRole.mitra,
-    );
-
-    await LocalStorage.saveAccessToken('mock_mitra_token');
-    await LocalStorage.saveUserRole('MITRA');
-    await LocalStorage.saveUserId('m1');
-
-    state = AuthState(user: mockMitra);
-  }
-
-  Future<void> register(String name, String phone, String password,
-      [String? email]) async {
-    state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(seconds: 1));
-
-    final newUser = UserModel(
-      id: 'u_${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      phone: phone,
-      email: email,
-      role: UserRole.customer,
-    );
-
-    await LocalStorage.saveAccessToken('mock_token_new');
-    await LocalStorage.saveUserRole('CUSTOMER');
-    await LocalStorage.saveUserId(newUser.id);
-
-    state = AuthState(user: newUser);
+  Future<void> register(String name, String phone, String password, [String? email]) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final data = await _authRepo.register(name, phone, password, email);
+      final user = UserModel.fromJson(data['user']);
+      await LocalStorage.saveUserName(user.name);
+      state = AuthState(user: user);
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Registrasi gagal.';
+      state = state.copyWith(isLoading: false, error: msg.toString());
+    } catch (_) {
+      state = state.copyWith(isLoading: false, error: 'Terjadi kesalahan. Coba lagi.');
+    }
   }
 
   Future<void> logout() async {
-    await LocalStorage.clearAll();
+    await _authRepo.logout();
     state = const AuthState();
   }
 }
@@ -116,29 +101,16 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (_) => AuthNotifier(),
 );
 
-// Address provider (mock)
-final addressesProvider = StateProvider<List<AddressModel>>((_) => [
-      const AddressModel(
-        id: 'a1',
-        label: 'Rumah',
-        recipientName: 'Ahmad Wirosari',
-        phone: '081234567890',
-        address: 'Jl. Merdeka No. 12, Wirosari, Grobogan',
-        isDefault: true,
-        note: 'Rumah warna hijau, pagar besi',
-      ),
-      const AddressModel(
-        id: 'a2',
-        label: 'Kantor',
-        recipientName: 'Ahmad Wirosari',
-        phone: '081234567890',
-        address: 'Jl. Gadjah Mada No. 5, Wirosari, Grobogan',
-      ),
-    ]);
+// Address providers
+final addressesProvider = StateProvider<List<AddressModel>>((_) => []);
 
 final selectedAddressProvider = StateProvider<AddressModel?>(
-  (ref) => ref.watch(addressesProvider).firstWhere(
-        (a) => a.isDefault,
-        orElse: () => ref.watch(addressesProvider).first,
-      ),
+  (ref) {
+    final addresses = ref.watch(addressesProvider);
+    if (addresses.isEmpty) return null;
+    return addresses.firstWhere(
+      (a) => a.isDefault,
+      orElse: () => addresses.first,
+    );
+  },
 );

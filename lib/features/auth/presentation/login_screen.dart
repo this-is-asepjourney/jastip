@@ -28,23 +28,66 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    try {
-      if (_isMitraMode) {
-        await ref
-            .read(authProvider.notifier)
-            .loginAsMitra(_phoneCtrl.text, _passwordCtrl.text);
-        if (mounted) context.go(AppRoutes.mitraHome);
+
+    // Tampilkan popup loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 24),
+              Text('Memproses login...'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await ref
+        .read(authProvider.notifier)
+        .login(_phoneCtrl.text, _passwordCtrl.text);
+        
+    if (!mounted) return;
+    
+    // Tutup popup loading
+    Navigator.pop(context);
+
+    final authState = ref.read(authProvider);
+    if (authState.error != null) {
+      // Tampilkan popup error
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Gagal'),
+          content: Text(authState.error!),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    
+    if (authState.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login berhasil!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      final role = authState.user?.role.name ?? 'CUSTOMER';
+      if (role == 'MITRA' || role == 'mitra') {
+        context.go(AppRoutes.mitraHome);
       } else {
-        await ref
-            .read(authProvider.notifier)
-            .login(_phoneCtrl.text, _passwordCtrl.text);
-        if (mounted) context.go(AppRoutes.home);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login gagal: $e')),
-        );
+        context.go(AppRoutes.home);
       }
     }
   }

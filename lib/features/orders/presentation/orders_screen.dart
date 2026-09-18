@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/date_formatter.dart';
 import '../data/order_models.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -150,7 +151,7 @@ class _OrderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _statusColor.withOpacity(0.1),
+                    color: _statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -179,7 +180,7 @@ class _OrderCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  DateFormatter.formatDate(order.createdAt),
+                  DateFormatter.formatDateTime(order.createdAt),
                   style: const TextStyle(
                     color: AppColors.textHint,
                     fontSize: 12,
