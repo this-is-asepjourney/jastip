@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_router.dart';
@@ -47,18 +47,20 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.secondary,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary],
+                  ),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
-                  Icons.star_rounded,
+                  Icons.check_rounded,
                   color: Colors.white,
                   size: 40,
                 ),
               ),
               const SizedBox(height: 20),
               const Text(
-                'Request Terkirim!',
+                'Penawaran Terkirim!',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -66,11 +68,12 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Mitra akan segera mengecek ketersediaan dan mengirimkan estimasi harga.',
+                'Driver di sekitarmu akan melihat penawaran ini di peta dan segera mengambil order.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
+                  height: 1.5,
                 ),
               ),
               const SizedBox(height: 24),
@@ -79,7 +82,7 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                   Navigator.pop(context);
                   context.go(AppRoutes.orders);
                 },
-                child: const Text('Lihat Pesanan'),
+                child: const Text('Lihat Status Pesanan'),
               ),
             ],
           ),
@@ -92,14 +95,14 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 72,
+        toolbarHeight: 90,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: const [
-            Text('Custom Jastip'),
+            Text('Buat Penawaran'),
             Text(
-              'Request barang dari toko manapun',
+              'Driver akan membelikan & mengantarkan',
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
@@ -112,32 +115,47 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Info banner
+
+              // ── Banner alur baru ───────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.08),
+                      AppColors.primaryLight.withValues(alpha: 0.3),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.secondary.withValues(alpha: 0.3),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                   ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(
-                      Icons.info_rounded,
-                      color: AppColors.secondary,
-                      size: 20,
-                    ),
-                    SizedBox(width: 12),
+                    Text('🛵', style: TextStyle(fontSize: 28)),
+                    SizedBox(width: 14),
                     Expanded(
-                      child: Text(
-                        'Mitra akan mengecek harga aktual sebelum checkout. Kamu bisa setuju atau tolak harga tersebut.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bagaimana cara kerjanya?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Isi detail barang → Driver terdekat lihat di peta → Driver belanja & antar ke rumahmu.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -145,6 +163,7 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               ),
               const SizedBox(height: 24),
 
+              // ── Detail Barang ──────────────────────────────────────
               const Text(
                 'Detail Barang',
                 style: TextStyle(
@@ -157,19 +176,19 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               TextFormField(
                 controller: _productNameCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Produk *',
+                  labelText: 'Nama Barang *',
                   hintText: 'Contoh: Minyak Bimoli 2 Liter',
                   prefixIcon: Icon(Icons.inventory_2_rounded),
                 ),
                 validator: (v) =>
-                    (v?.isEmpty ?? true) ? 'Masukkan nama produk' : null,
+                    (v?.isEmpty ?? true) ? 'Masukkan nama barang' : null,
               ),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _storeCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Toko / Tempat *',
+                  labelText: 'Toko / Tempat Belanja *',
                   hintText: 'Contoh: Indomaret Wirosari',
                   prefixIcon: Icon(Icons.store_rounded),
                 ),
@@ -196,18 +215,78 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
 
               TextFormField(
                 controller: _noteCtrl,
-                maxLines: 4,
+                maxLines: 3,
                 decoration: const InputDecoration(
                   labelText: 'Catatan (opsional)',
-                  hintText:
-                      'Contoh: Jika merek tidak tersedia, boleh diganti merek lain.',
+                  hintText: 'Contoh: Jika merek tidak ada, boleh diganti.',
                   prefixIcon: Icon(Icons.notes_rounded),
                   alignLabelWithHint: true,
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Address section
+              // ── Titik Koordinat (COMING SOON) ──────────────────────
+              const Text(
+                'Titik Lokasi',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Lokasi toko belanja
+              _LocationFieldComingSoon(
+                icon: Icons.store_rounded,
+                iconColor: AppColors.secondary,
+                title: 'Lokasi Toko Belanja',
+                subtitle: 'Tandai di peta tempat driver harus belanja',
+                badgeLabel: 'Coming Soon',
+              ),
+              const SizedBox(height: 10),
+
+              // Lokasi antar / tujuan
+              _LocationFieldComingSoon(
+                icon: Icons.home_rounded,
+                iconColor: AppColors.primary,
+                title: 'Lokasi Pengantaran',
+                subtitle: 'Tandai di peta tujuan pengantaran barang',
+                badgeLabel: 'Coming Soon',
+              ),
+              const SizedBox(height: 8),
+
+              // Keterangan sementara
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.secondary.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_rounded,
+                        color: AppColors.secondary, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Sementara menggunakan alamat default di profilmu. Fitur pilih koordinat dari peta segera hadir!',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Alamat Antar (sementara dari profil) ──────────────
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -219,10 +298,8 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      color: AppColors.primary,
-                    ),
+                    Icon(Icons.location_on_rounded,
+                        color: AppColors.primary),
                     SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -230,10 +307,10 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Alamat Pengantaran',
+                            'Alamat Pengantaran (Default)',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                           ),
                           SizedBox(height: 2),
@@ -252,6 +329,7 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
               ),
               const SizedBox(height: 32),
 
+              // ── Tombol Submit ──────────────────────────────────────
               ElevatedButton.icon(
                 onPressed: _isSubmitting ? null : _submit,
                 icon: _isSubmitting
@@ -264,12 +342,94 @@ class _CustomJastipScreenState extends State<CustomJastipScreen> {
                         ),
                       )
                     : const Icon(Icons.send_rounded),
-                label: const Text('Kirim Request'),
+                label: const Text('Kirim Penawaran ke Driver'),
               ),
               const SizedBox(height: 24),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Widget lokasi coming soon ─────────────────────────────────────────────
+
+class _LocationFieldComingSoon extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String badgeLabel;
+
+  const _LocationFieldComingSoon({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.badgeLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              badgeLabel,
+              style: const TextStyle(
+                color: AppColors.secondary,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

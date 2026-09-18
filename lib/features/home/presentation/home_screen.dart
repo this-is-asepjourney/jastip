@@ -163,10 +163,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      height: 140,
+                      // no fixed height — grows with content
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppColors.secondary, AppColors.secondaryDark],
+                          colors: [AppColors.primaryDark, AppColors.primary],
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -176,35 +176,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             right: -20,
                             bottom: -20,
                             child: Container(
-                              width: 120,
-                              height: 120,
+                              width: 130,
+                              height: 130,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
+                                color: Colors.white.withValues(alpha: 0.08),
                                 shape: BoxShape.circle,
                               ),
                             ),
                           ),
+                          Positioned(
+                            right: 16,
+                            top: 16,
+                            child: Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Center(
+                                child: Text('🛵',
+                                    style: TextStyle(fontSize: 26)),
+                              ),
+                            ),
+                          ),
                           Padding(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.fromLTRB(20, 20, 80, 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Text(
-                                  '🎉 Custom Jastip',
+                                  'Buat Penawaran',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 4),
                                 const Text(
-                                  'Request barang favoritmu\nlangsung dari toko!',
+                                  'Driver belikan & antarkan\napa yang kamu butuhkan!',
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    height: 1.5,
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    height: 1.4,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -213,17 +229,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       context.push(AppRoutes.customJastip),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
+                                      horizontal: 14,
+                                      vertical: 7,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text(
-                                      'Request Sekarang',
+                                      'Minta Sekarang',
                                       style: TextStyle(
-                                        color: AppColors.secondaryDark,
+                                        color: AppColors.primaryDark,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -237,6 +253,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ],
+
                 ),
               ),
             ),
